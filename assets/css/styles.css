@@ -494,7 +494,7 @@ h6 {
 }
 
 .teddy-emoji:hover {
-  transform: scale(1.15);
+  transform: scale(1.15) 2s ease-in-out;
   animation: teddyFloatFast 4s ease-in-out infinite;
 }
 
