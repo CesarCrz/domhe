@@ -6,6 +6,15 @@ let isLoading = true
 const AOS = window.AOS
 const Swiper = window.Swiper
 
+// Color palette for random avatar backgrounds
+const colorPalette = [
+  "#fc2680", // primary-color
+  "#793ab8", // secondary-purple
+  "#15aae2", // secondary-blue
+  "#a1cd3a", // secondary-green
+  "#fe8604", // secondary-orange
+]
+
 // ===== INITIALIZATION =====
 document.addEventListener("DOMContentLoaded", () => {
   initializeWebsite()
@@ -38,6 +47,12 @@ function initializeWebsite() {
 
   // Initialize star ratings
   initStarRatings()
+
+  // Initialize avatar colors
+  initAvatarColors()
+
+  // Initialize date input
+  initDateInput()
 }
 
 // ===== LOADING SCREEN =====
@@ -164,6 +179,131 @@ function initStarRatings() {
   })
 }
 
+// ===== AVATAR COLORS SYSTEM =====
+function initAvatarColors() {
+  // Extended color palette with gradients
+  const extendedColorPalette = [
+    "linear-gradient(135deg, #fc2680, #e91e63)", // Pink gradient
+    "linear-gradient(135deg, #793ab8, #9c27b0)", // Purple gradient
+    "linear-gradient(135deg, #15aae2, #2196f3)", // Blue gradient
+    "linear-gradient(135deg, #a1cd3a, #8bc34a)", // Green gradient
+    "linear-gradient(135deg, #fe8604, #ff9800)", // Orange gradient
+    "linear-gradient(135deg, #e91e63, #f06292)", // Light pink gradient
+    "linear-gradient(135deg, #673ab7, #9575cd)", // Light purple gradient
+    "linear-gradient(135deg, #00bcd4, #4dd0e1)", // Cyan gradient
+  ]
+
+  // Get all family avatars
+  const familyAvatars = document.querySelectorAll(".family-avatar")
+  const nannyAvatars = document.querySelectorAll(".nanny-avatar")
+
+  // Shuffle function for random color assignment
+  function shuffleArray(array) {
+    const shuffled = [...array]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
+  }
+
+  // Assign random gradient colors to family avatars
+  const shuffledFamilyColors = shuffleArray(extendedColorPalette)
+  familyAvatars.forEach((avatar, index) => {
+    const randomColor = shuffledFamilyColors[index % shuffledFamilyColors.length]
+    avatar.style.background = randomColor
+
+    // Add subtle animation delay
+    avatar.style.animationDelay = `${index * 0.1}s`
+  })
+
+  // Assign different random gradient colors to nanny avatars
+  const shuffledNannyColors = shuffleArray(extendedColorPalette.slice().reverse())
+  nannyAvatars.forEach((avatar, index) => {
+    const randomColor = shuffledNannyColors[index % shuffledNannyColors.length]
+    avatar.style.background = randomColor
+
+    // Add subtle animation delay
+    avatar.style.animationDelay = `${index * 0.1}s`
+  })
+
+  // Add hover effect enhancement
+  const allAvatars = document.querySelectorAll(".author-avatar")
+  allAvatars.forEach((avatar) => {
+    avatar.addEventListener("mouseenter", () => {
+      avatar.style.transform = "scale(1.05) rotate(5deg)"
+    })
+
+    avatar.addEventListener("mouseleave", () => {
+      avatar.style.transform = "scale(1) rotate(0deg)"
+    })
+  })
+}
+
+// ===== DATE INPUT INITIALIZATION =====
+function initDateInput() {
+  const dateInput = document.getElementById("date")
+
+  if (dateInput) {
+    // Set minimum date to tomorrow (to allow preparation time)
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const tomorrowString = tomorrow.toISOString().split("T")[0]
+    dateInput.setAttribute("min", tomorrowString)
+
+    // Set maximum date to 1 year from now
+    const maxDate = new Date()
+    maxDate.setFullYear(maxDate.getFullYear() + 1)
+    const maxDateString = maxDate.toISOString().split("T")[0]
+    dateInput.setAttribute("max", maxDateString)
+
+    // Add placeholder text
+    dateInput.setAttribute("placeholder", "Selecciona una fecha")
+
+    // Enhanced event listener for date changes
+    dateInput.addEventListener("change", (e) => {
+      const selectedDateString = e.target.value
+      if (!selectedDateString) return
+
+      // Parse date correctly to avoid timezone issues
+      const [year, month, day] = selectedDateString.split("-").map(Number)
+      const selectedDate = new Date(year, month - 1, day) // month is 0-indexed
+
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      tomorrow.setHours(0, 0, 0, 0)
+
+      if (selectedDate < tomorrow) {
+        showNotification(
+          "Por favor selecciona una fecha a partir de mañana para permitir la preparación del servicio.",
+          "warning",
+        )
+        e.target.value = ""
+        return
+      }
+
+      // Format date correctly for display
+      const formattedDate = formatDateToSpanish(selectedDateString)
+
+      // Check if it's a weekend and show appropriate message
+      if (isWeekend(selectedDateString)) {
+        showNotification(`Fecha seleccionada: ${formattedDate} - ¡Perfecto para eventos familiares! 🎉`, "success")
+      } else {
+        showNotification(`Fecha seleccionada: ${formattedDate} ✅`, "success")
+      }
+    })
+
+    // Add focus and blur events for better UX
+    dateInput.addEventListener("focus", () => {
+      dateInput.parentElement.classList.add("focused")
+    })
+
+    dateInput.addEventListener("blur", () => {
+      dateInput.parentElement.classList.remove("focused")
+    })
+  }
+}
+
 // ===== ANIMATIONS =====
 function initAnimations() {
   // Initialize AOS (Animate On Scroll)
@@ -245,6 +385,7 @@ function initForms() {
   }
 }
 
+// ===== ENHANCED FORM HANDLING =====
 function handleContactForm(e) {
   e.preventDefault()
 
@@ -264,14 +405,35 @@ function handleContactForm(e) {
     return
   }
 
-  // Phone validation
-  const phoneRegex = /^[\d\s\-+()]+$/
-  if (!phoneRegex.test(data.phone)) {
-    showNotification("Por favor, ingresa un teléfono válido.", "error")
+  // Phone validation (Mexican phone numbers)
+  const phoneRegex = /^[\d\s\-+()]{10,}$/
+  if (!phoneRegex.test(data.phone.replace(/\s/g, ""))) {
+    showNotification("Por favor, ingresa un teléfono válido (mínimo 10 dígitos).", "error")
     return
   }
 
-  // Create structured WhatsApp message
+  // Enhanced date validation
+  if (data.date) {
+    const selectedDate = new Date(data.date)
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    tomorrow.setHours(0, 0, 0, 0)
+
+    if (selectedDate < tomorrow) {
+      showNotification("Por favor selecciona una fecha a partir de mañana.", "error")
+      return
+    }
+
+    // Check if date is too far in the future
+    const maxDate = new Date()
+    maxDate.setFullYear(maxDate.getFullYear() + 1)
+    if (selectedDate > maxDate) {
+      showNotification("Por favor selecciona una fecha dentro del próximo año.", "error")
+      return
+    }
+  }
+
+  // Create enhanced WhatsApp message
   const serviceNames = {
     ocasional: "Servicio Ocasional",
     fijo: "Servicio Fijo",
@@ -283,11 +445,29 @@ function handleContactForm(e) {
 
   const serviceName = data.service ? serviceNames[data.service] || data.service : "No especificado"
 
-  const whatsappMessage = `¡Hola! Soy ${data.name}
+  // Enhanced date formatting
+  let dateText = "No especificada"
+  let dateEmoji = "📅"
+
+  if (data.date) {
+    const selectedDate = new Date(data.date)
+    dateText = formatDateToSpanish(data.date)
+
+    // Add emoji based on day of week
+    const dayOfWeek = selectedDate.getDay()
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      dateEmoji = "🎉" // Weekend
+    } else {
+      dateEmoji = "📅" // Weekday
+    }
+  }
+
+  const whatsappMessage = `¡Hola! Soy ${data.name} 👋
 
 📧 Email: ${data.email}
 📱 Teléfono: ${data.phone}
-🏠 Servicio solicitado: ${serviceName}
+���� Servicio solicitado: ${serviceName}
+${dateEmoji} Fecha deseada: ${dateText}
 
 💬 Mensaje:
 ${data.message}
@@ -296,16 +476,29 @@ ${data.message}
 
 _Enviado desde domhenanny.com_`
 
-  // Encode message for URL
-  const encodedMessage = encodeURIComponent(whatsappMessage)
-  const whatsappURL = `https://wa.me/5213334978486?text=${encodedMessage}`
+  // Show loading state
+  const submitButton = e.target.querySelector('button[type="submit"]')
+  const originalText = submitButton.textContent
+  submitButton.textContent = "Enviando..."
+  submitButton.disabled = true
 
-  // Open WhatsApp
-  window.open(whatsappURL, "_blank")
+  // Simulate processing time
+  setTimeout(() => {
+    // Encode message for URL
+    const encodedMessage = encodeURIComponent(whatsappMessage)
+    const whatsappURL = `https://wa.me/5213334978486?text=${encodedMessage}`
 
-  // Show success message and reset form
-  showNotification("¡Redirigiendo a WhatsApp con tu mensaje!", "success")
-  e.target.reset()
+    // Open WhatsApp
+    window.open(whatsappURL, "_blank")
+
+    // Show success message and reset form
+    showNotification("¡Mensaje enviado a WhatsApp exitosamente!", "success")
+    e.target.reset()
+
+    // Reset button
+    submitButton.textContent = originalText
+    submitButton.disabled = false
+  }, 1000)
 }
 
 // ===== SCROLL EFFECTS =====
@@ -553,6 +746,43 @@ function throttle(func, limit) {
   }
 }
 
+// ===== DATE FORMATTING UTILITIES =====
+function formatDateToSpanish(dateString) {
+  // Parse date correctly to avoid timezone issues
+  const [year, month, day] = dateString.split("-").map(Number)
+  const date = new Date(year, month - 1, day) // month is 0-indexed
+
+  const options = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }
+  return date.toLocaleDateString("es-ES", options)
+}
+
+function isWeekend(dateString) {
+  // Parse date correctly to avoid timezone issues
+  const [year, month, day] = dateString.split("-").map(Number)
+  const date = new Date(year, month - 1, day) // month is 0-indexed
+  const dayOfWeek = date.getDay()
+  return dayOfWeek === 0 || dayOfWeek === 6 // Sunday = 0, Saturday = 6
+}
+
+function addBusinessDays(date, days) {
+  const result = new Date(date)
+  let addedDays = 0
+
+  while (addedDays < days) {
+    result.setDate(result.getDate() + 1)
+    if (result.getDay() !== 0 && result.getDay() !== 6) {
+      addedDays++
+    }
+  }
+
+  return result
+}
+
 // ===== PERFORMANCE OPTIMIZATIONS =====
 // Optimize scroll events
 window.addEventListener(
@@ -569,6 +799,7 @@ window.addEventListener(
     // Handle responsive adjustments
     updateFloatingElementsVisibility()
     initStarRatings() // Reinitialize stars on resize
+    initAvatarColors() // Reinitialize avatar colors on resize
   }, 250),
 )
 
