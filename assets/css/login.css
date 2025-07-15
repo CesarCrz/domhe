@@ -151,6 +151,18 @@ body {
   color: var(--primary-color);
 }
 
+.showPassword{
+  position: relative;
+  cursor: pointer;
+  top: -2.37rem;
+  right: -92.5%;
+}
+
+.showPassword:hover{
+    color: var(--secondary-purple)
+}
+
+
 .login-form {
   width: 100%;
 }
