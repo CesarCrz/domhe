@@ -53,6 +53,9 @@ function initializeWebsite() {
 
   // Initialize date input
   initDateInput()
+
+  // Initialize service-based date handling
+  initServiceDateHandling()
 }
 
 // ===== LOADING SCREEN =====
@@ -240,60 +243,74 @@ function initAvatarColors() {
   })
 }
 
+// ===== SERVICE-BASED DATE HANDLING =====
+function initServiceDateHandling() {
+  const serviceSelect = document.getElementById("service")
+  const dateLabel = document.getElementById("dateLabel")
+  const singleDateWrapper = document.getElementById("singleDateWrapper")
+  const dateRangeWrapper = document.getElementById("dateRangeWrapper")
+
+  if (serviceSelect && dateLabel && singleDateWrapper && dateRangeWrapper) {
+    serviceSelect.addEventListener("change", (e) => {
+      const selectedService = e.target.value
+      updateDateInputBasedOnService(selectedService, dateLabel, singleDateWrapper, dateRangeWrapper)
+    })
+  }
+}
+
+function updateDateInputBasedOnService(service, dateLabel, singleDateWrapper, dateRangeWrapper) {
+  // Reset both wrappers
+  singleDateWrapper.style.display = "flex"
+  dateRangeWrapper.style.display = "none"
+
+  switch (service) {
+    case "fijo":
+      dateLabel.textContent = "Fecha de Inicio"
+      break
+    case "viajes":
+      dateLabel.textContent = "Fechas del Viaje"
+      singleDateWrapper.style.display = "none"
+      dateRangeWrapper.style.display = "flex"
+      break
+    case "ocasional":
+    case "nocturno":
+    case "fiesta":
+      dateLabel.textContent = "Fecha Deseada"
+      break
+    case "semanal":
+      dateLabel.textContent = "Fecha de Inicio"
+      break
+    default:
+      dateLabel.textContent = "Fecha Deseada"
+      break
+  }
+}
+
 // ===== DATE INPUT INITIALIZATION =====
 function initDateInput() {
   const dateInput = document.getElementById("date")
+  const startDateInput = document.getElementById("startDate")
+  const endDateInput = document.getElementById("endDate")
 
+  // Set minimum dates for all date inputs
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrowString = tomorrow.toISOString().split("T")[0]
+
+  const maxDate = new Date()
+  maxDate.setFullYear(maxDate.getFullYear() + 1)
+  const maxDateString = maxDate.toISOString().split("T")[0]
+
+  // Configure single date input
   if (dateInput) {
-    // Set minimum date to tomorrow (to allow preparation time)
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const tomorrowString = tomorrow.toISOString().split("T")[0]
     dateInput.setAttribute("min", tomorrowString)
-
-    // Set maximum date to 1 year from now
-    const maxDate = new Date()
-    maxDate.setFullYear(maxDate.getFullYear() + 1)
-    const maxDateString = maxDate.toISOString().split("T")[0]
     dateInput.setAttribute("max", maxDateString)
-
-    // Add placeholder text
     dateInput.setAttribute("placeholder", "Selecciona una fecha")
 
-    // Enhanced event listener for date changes
     dateInput.addEventListener("change", (e) => {
-      const selectedDateString = e.target.value
-      if (!selectedDateString) return
-
-      // Parse date correctly to avoid timezone issues
-      const [year, month, day] = selectedDateString.split("-").map(Number)
-      const selectedDate = new Date(year, month - 1, day) // month is 0-indexed
-
-      const tomorrow = new Date()
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      tomorrow.setHours(0, 0, 0, 0)
-
-      if (selectedDate < tomorrow) {
-        showNotification(
-          "Por favor selecciona una fecha a partir de mañana para permitir la preparación del servicio.",
-          "warning",
-        )
-        e.target.value = ""
-        return
-      }
-
-      // Format date correctly for display
-      const formattedDate = formatDateToSpanish(selectedDateString)
-
-      // Check if it's a weekend and show appropriate message
-      if (isWeekend(selectedDateString)) {
-        showNotification(`Fecha seleccionada: ${formattedDate} - ¡Perfecto para eventos familiares! 🎉`, "success")
-      } else {
-        showNotification(`Fecha seleccionada: ${formattedDate} ✅`, "success")
-      }
+      handleSingleDateChange(e)
     })
 
-    // Add focus and blur events for better UX
     dateInput.addEventListener("focus", () => {
       dateInput.parentElement.classList.add("focused")
     })
@@ -301,6 +318,103 @@ function initDateInput() {
     dateInput.addEventListener("blur", () => {
       dateInput.parentElement.classList.remove("focused")
     })
+  }
+
+  // Configure date range inputs
+  if (startDateInput && endDateInput) {
+    startDateInput.setAttribute("min", tomorrowString)
+    startDateInput.setAttribute("max", maxDateString)
+    endDateInput.setAttribute("min", tomorrowString)
+    endDateInput.setAttribute("max", maxDateString)
+
+    startDateInput.addEventListener("change", (e) => {
+      handleDateRangeChange(e, "start")
+    })
+
+    endDateInput.addEventListener("change", (e) => {
+      handleDateRangeChange(e, "end")
+    })
+  }
+}
+
+function handleSingleDateChange(e) {
+  const selectedDateString = e.target.value
+  if (!selectedDateString) return
+
+  // Parse date correctly to avoid timezone issues
+  const [year, month, day] = selectedDateString.split("-").map(Number)
+  const selectedDate = new Date(year, month - 1, day)
+
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  tomorrow.setHours(0, 0, 0, 0)
+
+  if (selectedDate < tomorrow) {
+    showNotification(
+      "Por favor selecciona una fecha a partir de mañana para permitir la preparación del servicio.",
+      "warning",
+    )
+    e.target.value = ""
+    return
+  }
+
+  // Format date correctly for display
+  const formattedDate = formatDateToSpanish(selectedDateString)
+
+  // Check if it's a weekend and show appropriate message
+  if (isWeekend(selectedDateString)) {
+    showNotification(`Fecha seleccionada: ${formattedDate} - ¡Perfecto para eventos familiares! 🎉`, "success")
+  } else {
+    showNotification(`Fecha seleccionada: ${formattedDate} ✅`, "success")
+  }
+}
+
+function handleDateRangeChange(e, type) {
+  const selectedDateString = e.target.value
+  if (!selectedDateString) return
+
+  const [year, month, day] = selectedDateString.split("-").map(Number)
+  const selectedDate = new Date(year, month - 1, day)
+
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  tomorrow.setHours(0, 0, 0, 0)
+
+  if (selectedDate < tomorrow) {
+    showNotification(
+      "Por favor selecciona una fecha a partir de mañana para permitir la preparación del servicio.",
+      "warning",
+    )
+    e.target.value = ""
+    return
+  }
+
+  const formattedDate = formatDateToSpanish(selectedDateString)
+
+  if (type === "start") {
+    // Update end date minimum to be after start date
+    const endDateInput = document.getElementById("endDate")
+    if (endDateInput) {
+      const nextDay = new Date(selectedDate)
+      nextDay.setDate(nextDay.getDate() + 1)
+      const nextDayString = nextDay.toISOString().split("T")[0]
+      endDateInput.setAttribute("min", nextDayString)
+    }
+    showNotification(`Fecha de inicio: ${formattedDate} ✅`, "success")
+  } else {
+    // Validate end date is after start date
+    const startDateInput = document.getElementById("startDate")
+    if (startDateInput && startDateInput.value) {
+      const [startYear, startMonth, startDay] = startDateInput.value.split("-").map(Number)
+      const startDate = new Date(startYear, startMonth - 1, startDay)
+
+      if (selectedDate <= startDate) {
+        showNotification("La fecha de fin debe ser posterior a la fecha de inicio.", "error")
+        e.target.value = ""
+        return
+      }
+    }
+    showNotification(`Fecha de fin: ${formattedDate} ✅`, "success")
   }
 }
 
@@ -393,7 +507,7 @@ function handleContactForm(e) {
   const data = Object.fromEntries(formData)
 
   // Basic validation
-  if (!data.name || !data.email || !data.phone || !data.message) {
+  if (!data.name || !data.email || !data.phone || !data.location || !data.message) {
     showNotification("Por favor, completa todos los campos requeridos.", "error")
     return
   }
@@ -412,8 +526,32 @@ function handleContactForm(e) {
     return
   }
 
-  // Enhanced date validation
-  if (data.date) {
+  // Enhanced date validation based on service type
+  const serviceType = data.service
+  if (serviceType === "viajes") {
+    // Validate date range for travel service
+    if (!data.startDate || !data.endDate) {
+      showNotification("Por favor, selecciona las fechas de inicio y fin para el servicio de viajes.", "error")
+      return
+    }
+
+    const startDate = new Date(data.startDate)
+    const endDate = new Date(data.endDate)
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    tomorrow.setHours(0, 0, 0, 0)
+
+    if (startDate < tomorrow || endDate < tomorrow) {
+      showNotification("Por favor selecciona fechas a partir de mañana.", "error")
+      return
+    }
+
+    if (endDate <= startDate) {
+      showNotification("La fecha de fin debe ser posterior a la fecha de inicio.", "error")
+      return
+    }
+  } else if (data.date) {
+    // Validate single date for other services
     const selectedDate = new Date(data.date)
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
@@ -445,17 +583,24 @@ function handleContactForm(e) {
 
   const serviceName = data.service ? serviceNames[data.service] || data.service : "No especificado"
 
-  // Enhanced date formatting
+  // Enhanced date formatting based on service type
   let dateText = "No especificada"
   let dateEmoji = "📅"
 
-  if (data.date) {
+  if (serviceType === "viajes" && data.startDate && data.endDate) {
+    const startFormatted = formatDateToSpanish(data.startDate)
+    const endFormatted = formatDateToSpanish(data.endDate)
+    dateText = `Del ${startFormatted} al ${endFormatted}`
+    dateEmoji = "✈️"
+  } else if (data.date) {
     const selectedDate = new Date(data.date)
     dateText = formatDateToSpanish(data.date)
 
-    // Add emoji based on day of week
+    // Add emoji based on day of week and service type
     const dayOfWeek = selectedDate.getDay()
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
+    if (serviceType === "fijo") {
+      dateEmoji = "📅" // Fixed service start date
+    } else if (dayOfWeek === 0 || dayOfWeek === 6) {
       dateEmoji = "🎉" // Weekend
     } else {
       dateEmoji = "📅" // Weekday
@@ -466,8 +611,9 @@ function handleContactForm(e) {
 
 📧 Email: ${data.email}
 📱 Teléfono: ${data.phone}
-���� Servicio solicitado: ${serviceName}
-${dateEmoji} Fecha deseada: ${dateText}
+📍 Ubicación: ${data.location}
+🏠 Servicio solicitado: ${serviceName}
+${dateEmoji} ${serviceType === "fijo" ? "Fecha de inicio" : serviceType === "viajes" ? "Fechas del viaje" : "Fecha deseada"}: ${dateText}
 
 💬 Mensaje:
 ${data.message}
@@ -488,17 +634,39 @@ _Enviado desde domhenanny.com_`
     const encodedMessage = encodeURIComponent(whatsappMessage)
     const whatsappURL = `https://wa.me/5213334978486?text=${encodedMessage}`
 
-    // Open WhatsApp
-    window.open(whatsappURL, "_blank")
+    // Enhanced WhatsApp opening for better iOS compatibility
+    if (isIOS()) {
+      // For iOS devices, use location.href instead of window.open
+      window.location.href = whatsappURL
+    } else {
+      // For other devices, use window.open
+      window.open(whatsappURL, "_blank")
+    }
 
     // Show success message and reset form
     showNotification("¡Mensaje enviado a WhatsApp exitosamente!", "success")
     e.target.reset()
 
+    // Reset date inputs visibility
+    const singleDateWrapper = document.getElementById("singleDateWrapper")
+    const dateRangeWrapper = document.getElementById("dateRangeWrapper")
+    const dateLabel = document.getElementById("dateLabel")
+
+    if (singleDateWrapper && dateRangeWrapper && dateLabel) {
+      singleDateWrapper.style.display = "flex"
+      dateRangeWrapper.style.display = "none"
+      dateLabel.textContent = "Fecha Deseada"
+    }
+
     // Reset button
     submitButton.textContent = originalText
     submitButton.disabled = false
   }, 1000)
+}
+
+// ===== iOS DETECTION =====
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 }
 
 // ===== SCROLL EFFECTS =====

@@ -208,7 +208,6 @@
                     <p>Ideal para familias que necesitan apoyo más de una vez a la semana. Puedes mantener la misma nanny o cambiar.</p>
                     <div class="service-details">
                         <span class="detail-badge">Mínimo 3 días semanales, con 3 horas al día</span>
-                        <!--<span class="detail-badge">3 horas/día</span>-->
                     </div>
                 </div>
                 
@@ -345,14 +344,13 @@
                             <div class="step-content">
                                 <h4>Bienvenida al equipo</h4>
                                 <p>Aprobando los filtros</p>
-
                             </div>
                         </div>
                     </div>
                     
                     <a href="https://www.instagram.com/p/DDdE0AZtT8f/?img_index=4&igsh=ajJzNjUxMG54YmNr" target="_blank" class="btn btn-primary">
                         <i class="fab fa-instagram"></i>
-                        <img src="" alt=""> <!--Espacio en blanco-->
+                        <img src="/placeholder.svg" alt="">
                         Ver más en Instagram
                     </a>
                 </div>
@@ -636,6 +634,11 @@
                         </div>
                         
                         <div class="form-group">
+                            <label for="location">¿De dónde eres? *</label>
+                            <input type="text" id="location" name="location" placeholder="Ej: Guadalajara Centro, Zapopan, Tlaquepaque..." required>
+                        </div>
+                        
+                        <div class="form-group">
                             <label for="service">Tipo de Servicio</label>
                             <select id="service" name="service">
                                 <option value="">Selecciona un servicio</option>
@@ -648,11 +651,25 @@
                             </select>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="date">Fecha Deseada</label>
-                            <div class="date-input-wrapper">
+                        <!-- Date Section - Dynamic based on service -->
+                        <div class="form-group" id="dateSection">
+                            <label for="date" id="dateLabel">Fecha Deseada</label>
+                            <div class="date-input-wrapper" id="singleDateWrapper">
                                 <input type="date" id="date" name="date" class="date-input">
                                 <i class="fas fa-calendar-alt date-icon"></i>
+                            </div>
+                            
+                            <!-- Date Range for Travel Service -->
+                            <div class="date-range-wrapper" id="dateRangeWrapper" style="display: none;">
+                                <div class="date-input-wrapper">
+                                    <input type="date" id="startDate" name="startDate" class="date-input" placeholder="Fecha de inicio">
+                                    <i class="fas fa-calendar-alt date-icon"></i>
+                                </div>
+                                <span class="date-separator">hasta</span>
+                                <div class="date-input-wrapper">
+                                    <input type="date" id="endDate" name="endDate" class="date-input" placeholder="Fecha de fin">
+                                    <i class="fas fa-calendar-alt date-icon"></i>
+                                </div>
                             </div>
                         </div>
                         
