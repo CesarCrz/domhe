@@ -197,9 +197,10 @@ h6 {
 }
 
 .logo-img {
-  width: 40px;
-  height: 40px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
+  object-fit: contain;
 }
 
 .logo-text {
@@ -208,6 +209,12 @@ h6 {
   font-size: 1.5rem;
   color: var(--primary-color);
   text-decoration: none;
+}
+
+.logo-text img{
+  width: 200px;
+  height: 60px;
+  object-fit: cover;
 }
 
 .nav-menu {
@@ -494,8 +501,9 @@ h6 {
 }
 
 .teddy-emoji img {
-  width: 500px;
-  height: 500px;
+  width: 400px;
+  height: 400px;
+  object-fit: contain;
 }
 
 .teddy-emoji:hover {
