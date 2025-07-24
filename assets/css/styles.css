@@ -142,9 +142,16 @@ h6 {
 }
 
 .teddy-loader {
-  font-size: 4rem;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 20px;
   animation: bounce 1s infinite;
-  margin-bottom: 20px;
+}
+
+.teddy-loader img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 @keyframes bounce {
@@ -171,7 +178,7 @@ h6 {
   background: rgba(250, 246, 241, 0.95);
   backdrop-filter: blur(10px);
   z-index: 1000;
-  padding: 15px 0;
+  padding: 10px 0;
   transition: var(--transition);
 }
 
@@ -188,39 +195,41 @@ h6 {
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  min-height: 70px;
 }
 
 .nav-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
+  height: 60px;
 }
 
 .logo-img {
-  width: 70px;
-  height: 70px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 .logo-text {
-  font-family: "Quicksand", sans-serif;
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: var(--primary-color);
+  display: flex;
+  align-items: center;
   text-decoration: none;
+  height: 100%;
 }
 
-.logo-text img{
+.logo-text img {
   width: 200px;
-  height: 60px;
-  object-fit: cover;
+  height: 55px;
+  object-fit: contain;
 }
 
 .nav-menu {
   display: flex;
   list-style: none;
-  gap: 30px;
+  gap: 25px;
   align-items: center;
 }
 
@@ -230,6 +239,7 @@ h6 {
   font-weight: 500;
   transition: var(--transition);
   position: relative;
+  font-size: 15px;
 }
 
 .nav-link:hover {
@@ -385,7 +395,7 @@ h6 {
   align-items: center;
   position: relative;
   overflow: hidden;
-  padding-top: 80px;
+  padding-top: 90px;
   z-index: 1;
 }
 
@@ -501,8 +511,8 @@ h6 {
 }
 
 .teddy-emoji img {
-  width: 400px;
-  height: 400px;
+  width: 500px;
+  height: 500px;
   object-fit: contain;
 }
 
@@ -769,6 +779,23 @@ h6 {
 
 .recruitment-steps {
   margin-bottom: 40px;
+}
+
+.recruitment-image {
+  width: 100%;
+  height: 350px;
+  overflow: hidden;
+  position: relative;
+  border-radius: 10px;
+}
+
+.recruitment-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.2);
+  display: block;
+  object-position: center bottom;
 }
 
 .step {
@@ -1357,16 +1384,47 @@ h6 {
   }
 
   .teddy-emoji img {
-    width: 400px;
-    height: 400px;
+    width: 450px;
+    height: 450px;
+  }
+
+  .nav-menu {
+    gap: 20px;
+  }
+
+  .nav-link {
+    font-size: 14px;
   }
 }
 
 @media (max-width: 768px) {
+  .navbar {
+    padding: 8px 0;
+  }
+
+  .nav-container {
+    min-height: 60px;
+  }
+
+  .nav-logo {
+    height: 50px;
+    gap: 10px;
+  }
+
+  .logo-img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .logo-text img {
+    width: 140px;
+    height: 35px;
+  }
+
   .nav-menu {
     position: fixed;
     left: -100%;
-    top: 70px;
+    top: 60px;
     flex-direction: column;
     background-color: var(--white);
     width: 100%;
@@ -1394,6 +1452,10 @@ h6 {
 
   .hamburger.active .bar:nth-child(3) {
     transform: translateY(-8px) rotate(-45deg);
+  }
+
+  .hero {
+    padding-top: 70px;
   }
 
   .hero-title {
@@ -1445,8 +1507,8 @@ h6 {
   }
 
   .teddy-emoji img {
-    width: 300px;
-    height: 300px;
+    width: 350px;
+    height: 350px;
   }
 
   .footer-bottom {
@@ -1472,6 +1534,21 @@ h6 {
 @media (max-width: 480px) {
   .container {
     padding: 0 15px;
+  }
+
+  .nav-logo {
+    height: 45px;
+    gap: 8px;
+  }
+
+  .logo-img {
+    width: 35px;
+    height: 35px;
+  }
+
+  .logo-text img {
+    width: 120px;
+    height: 30px;
   }
 
   .hero-title {
@@ -1504,8 +1581,8 @@ h6 {
   }
 
   .teddy-emoji img {
-    width: 250px;
-    height: 250px;
+    width: 280px;
+    height: 280px;
   }
 
   .social-floating {
@@ -1532,13 +1609,28 @@ h6 {
 }
 
 @media (max-width: 320px) {
+  .nav-logo {
+    height: 40px;
+    gap: 6px;
+  }
+
+  .logo-img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .logo-text img {
+    width: 100px;
+    height: 25px;
+  }
+
   .teddy-emoji {
     font-size: 6rem;
   }
 
   .teddy-emoji img {
-    width: 200px;
-    height: 200px;
+    width: 220px;
+    height: 220px;
   }
 
   .hero-title {
